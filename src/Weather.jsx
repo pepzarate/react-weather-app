@@ -1,16 +1,36 @@
-import React, { useState } from 'react'
-import getData from './services/getData'
+import React, { useCallback, useState } from 'react'
+import getLocation from './services/getLocation'
+import debounce from 'lodash/debounce'
 
 function Weather () {
   const [data, setData] = useState({})
-  const [location, setLocation] = useState('Orizaba,mx')
+  const [searchedTerm, setSearchedTerm] = useState('')
+  const [location, setLocation] = useState('')
 
-  const searchWeatherLocation = async (e) => {
-    if (e.key === 'Enter') {
-      const newData = await getData(location)
-      console.log(newData)
-      setData(newData)
+  const handleChange = e => {
+    const search = e.target.value
+    if (!search && !location) {
+      setSearchedTerm('')
+      setLocation('')
+    } else {
+      setSearchedTerm(search)
+      delayedSearch(search)
     }
+  }
+
+  // Delay search by 600ms
+  const delayedSearch = useCallback(
+    debounce((q) => sendQuery(q), 600),
+    []
+  )
+
+  const sendQuery = async (query) => {
+    // Call API with query parameter here
+    console.log(query)
+    const newData = await getLocation(query)
+    console.log(newData)
+    if (newData.cod === '400') setLocation('')
+    else setLocation(newData)
   }
 
   return (
@@ -49,14 +69,26 @@ function Weather () {
         </div>
       </div>
       <div className='flex items-center justify-center'>
-        <input
-          value={location}
-          className=' bg-transparent text-white font-bold text-2xl mb-20 focus:outline-0 border-b-4 p-2'
-          onChange={event => setLocation(event.target.value)}
-          onKeyDown={searchWeatherLocation}
-          placeholder='Ciudad'
-          type='text'
-        />
+        <form>
+          <input
+            value={searchedTerm}
+            className='bg-transparent text-white font-bold text-xl focus:outline-0 focus:border-teal-700 border-b-4 p-2'
+            onChange={handleChange}
+            placeholder='Ciudad'
+            type='text'
+          />
+          {location && searchedTerm
+            ? <ul className='text-white'>
+              {location.map(city =>
+                <li
+                  key={city.lat}
+                  className='bg-gray-700 mt-2 pl-2 cursor-pointer'
+                >
+                  {city.name} <span className='text-blue-600 text-base'> {city.state}</span> <span className='text-base text-blue-600'>{city.country}</span>
+                </li>)}
+              </ul>
+            : null}
+        </form>
       </div>
     </div>
   )

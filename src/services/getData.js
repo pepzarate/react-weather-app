@@ -1,3 +1,4 @@
+// https:// api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={API key}
 const WEATHER_URL = 'https://api.openweathermap.org/data/2.5/weather?'
 const API_KEY = '821f7f326ea7781f64b83f8857a8f2e8'
 
